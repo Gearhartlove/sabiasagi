@@ -1,8 +1,9 @@
 mod constants;
-
 use constants::*;
 use bevy::prelude::*;
 use battle_plugin::*;
+use battle_plugin::pokemon_roster::Pokemon;
+use crate::StartupStage::PreStartup;
 
 // reference : https://www.youtube.com/watch?v=s_4zaj8EbFI&t=757s
 
@@ -17,8 +18,10 @@ fn main() {
         })
         .insert_resource(ClearColor(Color::rgb(1., 1., 1.)))
         .add_plugins(DefaultPlugins)
+        .add_startup_system_to_stage(PreStartup, setup_assets)
         .add_startup_system(setup_arena)
         .add_startup_system(camera_setup)
+        // .add_system(debug_fighters)
         .run();
 }
 
@@ -26,24 +29,29 @@ fn camera_setup(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 }
 
-fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let weedle:  Fighter = Fighter {
-        name: "Weedle".to_string(),
-        level: 6,
-        hit_points: 22., //todo: change this number
-    };
-    let charmeleon: Fighter = Fighter {
-        name: "Charmeleon".to_string(),
-        level: 25,
-        hit_points: 70.,
-    };
+fn debug_fighters(query: Query<&Fighter>) {
+    for fighter in query.iter() {
+        println!("{:?}", fighter);
+    }
+}
 
+fn setup_assets(mut commands: Commands, asset_server: Res<AssetServer>) {
     // note: path starts from the /assets server
     commands.insert_resource(ArenaAssets {
         left_fighter_sprite: asset_server.load("sprites/charmeleon_sprite.png"),
         right_figher_sprite:  asset_server.load("sprites/weedle_sprite.png"),
         // arena:
     });
+}
+fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let weedle = Fighter::new(
+        Pokemon::Weedle, 25., 70
+    );
+    let charmeleon = Fighter::new(
+        Pokemon::Charmeleon, 25., 70
+    );
+
+    // CREATE  FIGHTERS -------------------------------------------------------
 
     // create weedle fighter
     commands.spawn_bundle(SpriteBundle {
@@ -69,4 +77,7 @@ fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     })
         .insert(charmeleon);
+
+    // CREATE HEALTH, NAME, LEVEL -------------------------------------------------------
+    commands.spawn()
 }

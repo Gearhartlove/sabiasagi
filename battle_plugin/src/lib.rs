@@ -1,15 +1,30 @@
+extern crate core;
+
+pub mod pokemon_roster;
 use bevy::prelude::*;
 use bevy_inspector_egui::{InspectorPlugin, Inspectable};
+use crate::pokemon_roster::Pokemon;
+
 
 // pub fn create_fighter(){}
 //coulddo: make fighter a trait and then require that certain
 //values are returned (would work with custom fighters)
-#[derive(Component, Inspectable)]
+#[derive(Component, Inspectable, Debug)]
 pub struct Fighter{
     pub name: String,
     pub hit_points: f32,
     pub level: i32,
     // ability: Box<Vec<Ability>>,
+}
+
+impl Fighter {
+    pub fn new(pokemon: Pokemon, hit_points: f32, level: i32) -> Self {
+        Fighter {
+            name: pokemon.to_string(),
+            hit_points,
+            level,
+        }
+    }
 }
 
 struct Ability {
@@ -32,6 +47,7 @@ pub struct Arena {
 pub struct ArenaAssets {
     pub left_fighter_sprite: Handle<Image>,
     pub right_figher_sprite: Handle<Image>,
+    // couldo: retro theme on top of the whole project -> imagine this has to do with shaders . . .
     // pub arena: Handle<Image>, todo: add arena background loading
 }
 
