@@ -208,6 +208,7 @@ name = "battle_plugin"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-inspector-egui",
 ]
 
 [[package]]
@@ -1903,7 +1904,6 @@ version = "0.1.0"
 dependencies = [
  "battle_plugin",
  "bevy",
- "bevy-inspector-egui",
 ]
 
 [[package]]
