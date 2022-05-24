@@ -69,10 +69,10 @@ fn setup_assets(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
     // create fighters
     let weedle = Fighter::new(
-        Pokemon::Weedle, 25., 70, Allegiance::Enemy
+        Pokemon::Weedle, 25., 6, Allegiance::Enemy,
     );
     let charmeleon = Fighter::new(
-        Pokemon::Charmeleon, 25., 70, Allegiance::Ally
+        Pokemon::Charmeleon, 25., 25, Allegiance::Ally,
     );
 
     // spawn ui
@@ -83,12 +83,13 @@ fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn spawn_pokemon_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
     // Static Assets
     spawn_pokemon_sprite(&mut commands, &asset_server, &fighter);
-    spawn_name_ui(&mut commands, &asset_server, &fighter);
+    spawn_pokemon_name(&mut commands, &asset_server, &fighter);
+    spawn_pokemon_level(&mut commands, &asset_server, &fighter);
     // Dynamic Assets
     // . . .
 }
 
-fn spawn_name_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
+fn spawn_pokemon_name(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
     let mut spawn_ui = |position: Rect<Val>| {
         commands.spawn_bundle(TextBundle {
             style: Style {
@@ -99,10 +100,10 @@ fn spawn_name_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, f
             },
             // left pokemon name text
             text: Text::with_section(
-                fighter.name.clone(),
+                fighter.name.to_uppercase().clone(),
                 TextStyle {
                     font: asset_server.load(FONT_PATH),
-                    font_size: FONT_SIZE,
+                    font_size: NAME_FONT_SIZE,
                     color: Color::BLACK,
                 },
                 TextAlignment {
@@ -136,6 +137,7 @@ fn spawn_name_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, f
         }
     }
 }
+
 fn spawn_pokemon_sprite(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
     let id: String = format!("sprites/{}_sprite.png", fighter.name.to_lowercase().clone());
     println!("id: {}", id);
@@ -158,5 +160,49 @@ fn spawn_pokemon_sprite(mut commands: &mut Commands, asset_server: &Res<AssetSer
             spawn_sprite(LEFT_FIGHTER_TRANSFORM);
         }
     }
+}
 
+fn spawn_pokemon_level(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
+    let mut spawn_ui = |position: Rect<Val>| {
+        commands.spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position,
+                ..default()
+            },
+            // left pokemon name text
+            text: Text::with_section(
+                format!(":L{}", fighter.level.to_string().clone()),
+                TextStyle {
+                    font: asset_server.load(BOLD_FONT_PATH),
+                    font_size: LEVEL_FONT_SIZE,
+                    color: Color::BLACK,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    ..default()
+                },
+            ),
+            ..default()
+        });
+    };
+    match fighter.allegiance.as_ref().unwrap() {
+        Allegiance::Ally => {
+            let pos = Rect {
+                left: Val::Px(100.),
+                top: Val::Px(40.),
+                ..default()
+            };
+            spawn_ui(pos)
+        }
+        Allegiance::Enemy => {
+            let pos = Rect {
+                right: Val::Px(70.),
+                bottom: Val::Px(180.),
+                ..default()
+            };
+            spawn_ui(pos)
+        }
+    }
 }
