@@ -1,4 +1,5 @@
 mod constants;
+
 use constants::*;
 use bevy::prelude::*;
 use battle_plugin::*;
@@ -49,7 +50,7 @@ fn debug_fighters(query: Query<&Fighter>) {
 
 fn debug_UI(query: Query<&Text>) {
     for text in query.iter() {
-         println!("{:?}", text);
+        println!("{:?}", text);
     }
 }
 
@@ -57,17 +58,32 @@ fn setup_assets(mut commands: Commands, asset_server: Res<AssetServer>) {
     // note: path starts from the /assets server
     commands.insert_resource(ArenaAssets {
         left_fighter_sprite: asset_server.load("sprites/charmeleon_sprite.png"),
-        right_figher_sprite:  asset_server.load("sprites/weedle_sprite.png"),
+        right_figher_sprite: asset_server.load("sprites/weedle_sprite.png"),
         // arena:
     });
 }
+
 fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
     let weedle = Fighter::new(
-        Pokemon::Weedle, 25., 70
+        Pokemon::Weedle, 25., 70,
     );
     let charmeleon = Fighter::new(
-        Pokemon::Charmeleon, 25., 70
+        Pokemon::Charmeleon, 25., 70,
     );
+
+
+
+    // create health, name, level -------------------------------------------------------
+    // note, i will not follow the picture exactly, i will have an above and
+    // below variant to put the text into
+    // couldo: align content to center
+    // todo: think about how i want to connect all of the ui elements to the fighters
+    //  could append the fighter to each tag, or make a p1 and p2 component and append it likewise,
+    //  or ???
+    // left pokemon name text
+    spawn_name_ui(&mut commands, &asset_server, &charmeleon, ScreenPosition::Left);
+    // right pokemon name text
+    spawn_name_ui(&mut commands, &asset_server,&weedle,ScreenPosition::Right);
 
     // CREATE  FIGHTERS -------------------------------------------------------
 
@@ -75,7 +91,7 @@ fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(SpriteBundle {
         sprite: Sprite {
             custom_size: Some(Vec2::splat(SPRITE_SIZE.clone())),
-            color: Color::Rgba {red: 1., green: 1., blue: 1., alpha: 1.},
+            color: Color::Rgba { red: 1., green: 1., blue: 1., alpha: 1. },
             ..default()
         },
         transform: LEFT_FIGHTER_TRANSFORM.clone(),
@@ -87,7 +103,7 @@ fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn_bundle(SpriteBundle {
         sprite: Sprite {
             custom_size: Some(Vec2::splat(SPRITE_SIZE.clone())),
-            color: Color::Rgba {red: 1., green: 1., blue: 1., alpha: 1.},
+            color: Color::Rgba { red: 1., green: 1., blue: 1., alpha: 1. },
             ..default()
         },
         transform: RIGHT_FIGHTER_TRANSFORM.clone(),
@@ -96,67 +112,58 @@ fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
     })
         .insert(charmeleon);
 
-    // create health, name, level -------------------------------------------------------
-    // note, i will not follow the picture exactly, i will have an above and
-    // below variant to put the text into
-    // couldo: align content to center
-    // todo: above or below variant
-    // todo: think about how i want to connect all of the ui elements to the fighters
-    //  could append the fighter to each tag, or make a p1 and p2 component and append it likewise,
-    //  or ???
-    // left pokemon name text
-    commands.spawn_bundle(TextBundle {
-        style: Style {
-            align_self: AlignSelf::FlexEnd,
-            position_type: PositionType::Absolute,
-            position:  Rect {
-                left: Val::Px(30.),
-                top: Val::Px(5.),
+}
+
+enum ScreenPosition {
+    Left,
+    Right,
+}
+
+fn spawn_name_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter, position: ScreenPosition) {
+    let mut spawn_ui = |position: Rect<Val>| {
+        commands.spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position,
                 ..default()
             },
+            // left pokemon name text
+            text: Text::with_section(
+                fighter.name.clone(),
+                TextStyle {
+                    font: asset_server.load(FONT_PATH),
+                    font_size: FONT_SIZE,
+                    color: Color::BLACK,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    ..default()
+                },
+            ),
             ..default()
-            },
-        text: Text::with_section(
-            "Charmeleon",
-            TextStyle {
-                font: asset_server.load(FONT_PATH),
-                font_size: FONT_SIZE,
-                color: Color::BLACK,
-            },
-            TextAlignment {
-                horizontal: HorizontalAlign::Center,
+        });
+    };
+    match position {
+        ScreenPosition::Right=> {
+            let hor_adj: Val = Val::Px(43.);
+            let vir_adj: Val = Val::Px(205.);
+            let pos = Rect {
+                right: hor_adj,
+                bottom: vir_adj,
                 ..default()
-            },
-        ),
-        ..default()
-    });
-    // right pokemon name text
-    let right_pos_val: Val = Val::Px(43.);
-    let bottom_pos_val : Val = Val::Px(205.);
-    commands.spawn_bundle(TextBundle {
-        style: Style {
-            align_self: AlignSelf::FlexEnd,
-            position_type: PositionType::Absolute,
-            position:  Rect {
-                right: right_pos_val,
-                bottom: bottom_pos_val,
+            };
+            spawn_ui(pos)
+        }
+        ScreenPosition::Left=> {
+            let hor_adj: Val = Val::Px(30.);
+            let vir_adj: Val = Val::Px(5.);
+            let pos = Rect {
+                left: hor_adj,
+                top: vir_adj,
                 ..default()
-            },
-            ..default()
-        },
-        // left pokemon name text
-        text: Text::with_section(
-            "Weeddddddle",
-            TextStyle {
-                font: asset_server.load(FONT_PATH),
-                font_size: FONT_SIZE,
-                color: Color::BLACK,
-            },
-            TextAlignment {
-                horizontal: HorizontalAlign::Center,
-                ..default()
-            },
-        ),
-        ..default()
-    });
+            };
+            spawn_ui(pos)
+        }
+    }
 }
