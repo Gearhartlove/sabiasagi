@@ -4,20 +4,26 @@ use bevy::prelude::*;
 use battle_plugin::*;
 use battle_plugin::pokemon_roster::Pokemon;
 use crate::StartupStage::PreStartup;
+use bevy_inspector_egui::{InspectorPlugin, RegisterInspectable, WorldInspectorPlugin};
+use crate::AlignContent::Center;
 
 // reference : https://www.youtube.com/watch?v=s_4zaj8EbFI&t=757s
 
 fn main() {
     let mut app = App::new();
     app
+        // todo: register fighter as inspectable
+        // .register_inspectable::<Fighter>()
         .insert_resource(WindowDescriptor {
             title: "konkuRRenz".to_string(),
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
             ..default()
         })
-        // .insert_resource(ClearColor(Color::rgb(1., 1., 1.)))
+        .insert_resource(ClearColor(Color::rgb(1., 1., 1.)))
         .add_plugins(DefaultPlugins)
+        .add_plugin(WorldInspectorPlugin::new())
+        // .add_plugin(InspectorPlugin::<Fighter>::new())
         .add_startup_system_to_stage(PreStartup, setup_assets)
         .add_startup_system(setup_arena)
         .add_startup_system(camera_setup)
@@ -90,28 +96,60 @@ fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
     })
         .insert(charmeleon);
 
-    // CREATE HEALTH, NAME, LEVEL -------------------------------------------------------
-    // Note, I will not follow the picture exactly, I will have an above and
+    // create health, name, level -------------------------------------------------------
+    // note, i will not follow the picture exactly, i will have an above and
     // below variant to put the text into
+    // couldo: align content to center
     // todo: above or below variant
-    // todo: think about how I want to connect all of the UI elements to the fighters
+    // todo: think about how i want to connect all of the ui elements to the fighters
     //  could append the fighter to each tag, or make a p1 and p2 component and append it likewise,
     //  or ???
-    // NAME
-    // left text
-    println!("spawning_text");
+    // left pokemon name text
     commands.spawn_bundle(TextBundle {
         style: Style {
             align_self: AlignSelf::FlexEnd,
             position_type: PositionType::Absolute,
-            margin: Rect::all(Val::Px(10.0)),
+            position:  Rect {
+                left: Val::Px(30.),
+                top: Val::Px(5.),
+                ..default()
+            },
             ..default()
             },
         text: Text::with_section(
-            "pokemon_name",
+            "Charmeleon",
             TextStyle {
                 font: asset_server.load(FONT_PATH),
-                font_size: 25.,
+                font_size: FONT_SIZE,
+                color: Color::BLACK,
+            },
+            TextAlignment {
+                horizontal: HorizontalAlign::Center,
+                ..default()
+            },
+        ),
+        ..default()
+    });
+    // right pokemon name text
+    let right_pos_val: Val = Val::Px(43.);
+    let bottom_pos_val : Val = Val::Px(205.);
+    commands.spawn_bundle(TextBundle {
+        style: Style {
+            align_self: AlignSelf::FlexEnd,
+            position_type: PositionType::Absolute,
+            position:  Rect {
+                right: right_pos_val,
+                bottom: bottom_pos_val,
+                ..default()
+            },
+            ..default()
+        },
+        // left pokemon name text
+        text: Text::with_section(
+            "Weeddddddle",
+            TextStyle {
+                font: asset_server.load(FONT_PATH),
+                font_size: FONT_SIZE,
                 color: Color::BLACK,
             },
             TextAlignment {

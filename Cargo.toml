@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 bevy = "0.7.0"
 battle_plugin = { path = "battle_plugin"}
+bevy-inspector-egui = "0.11.0"
 
 [workspace]
 members = [
