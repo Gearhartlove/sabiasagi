@@ -63,63 +63,32 @@ fn setup_assets(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
+// todo: think about how i want to connect all of the ui elements to the fighters
+//  could append the fighter to each tag, or make a p1 and p2 component and append it likewise,
+//  or ???
 fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // create fighters
     let weedle = Fighter::new(
-        Pokemon::Weedle, 25., 70,
+        Pokemon::Weedle, 25., 70, Allegiance::Enemy
     );
     let charmeleon = Fighter::new(
-        Pokemon::Charmeleon, 25., 70,
+        Pokemon::Charmeleon, 25., 70, Allegiance::Ally
     );
 
-
-
-    // create health, name, level -------------------------------------------------------
-    // note, i will not follow the picture exactly, i will have an above and
-    // below variant to put the text into
-    // couldo: align content to center
-    // todo: think about how i want to connect all of the ui elements to the fighters
-    //  could append the fighter to each tag, or make a p1 and p2 component and append it likewise,
-    //  or ???
-    // left pokemon name text
-    spawn_name_ui(&mut commands, &asset_server, &charmeleon, ScreenPosition::Left);
-    // right pokemon name text
-    spawn_name_ui(&mut commands, &asset_server,&weedle,ScreenPosition::Right);
-
-    // CREATE  FIGHTERS -------------------------------------------------------
-
-    // create weedle fighter
-    commands.spawn_bundle(SpriteBundle {
-        sprite: Sprite {
-            custom_size: Some(Vec2::splat(SPRITE_SIZE.clone())),
-            color: Color::Rgba { red: 1., green: 1., blue: 1., alpha: 1. },
-            ..default()
-        },
-        transform: LEFT_FIGHTER_TRANSFORM.clone(),
-        texture: asset_server.get_handle("sprites/weedle_sprite.png").clone(),
-        ..default()
-    })
-        .insert(weedle);
-    // create charmeleon fighter
-    commands.spawn_bundle(SpriteBundle {
-        sprite: Sprite {
-            custom_size: Some(Vec2::splat(SPRITE_SIZE.clone())),
-            color: Color::Rgba { red: 1., green: 1., blue: 1., alpha: 1. },
-            ..default()
-        },
-        transform: RIGHT_FIGHTER_TRANSFORM.clone(),
-        texture: asset_server.get_handle("sprites/charmeleon_sprite.png").clone(),
-        ..default()
-    })
-        .insert(charmeleon);
-
+    // spawn ui
+    spawn_pokemon_ui(&mut commands, &asset_server, &weedle);
+    spawn_pokemon_ui(&mut commands, &asset_server, &charmeleon);
 }
 
-enum ScreenPosition {
-    Left,
-    Right,
+fn spawn_pokemon_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
+    // Static Assets
+    spawn_pokemon_sprite(&mut commands, &asset_server, &fighter);
+    spawn_name_ui(&mut commands, &asset_server, &fighter);
+    // Dynamic Assets
+    // . . .
 }
 
-fn spawn_name_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter, position: ScreenPosition) {
+fn spawn_name_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
     let mut spawn_ui = |position: Rect<Val>| {
         commands.spawn_bundle(TextBundle {
             style: Style {
@@ -144,8 +113,8 @@ fn spawn_name_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, f
             ..default()
         });
     };
-    match position {
-        ScreenPosition::Right=> {
+    match fighter.allegiance.as_ref().unwrap() {
+        Allegiance::Enemy => {
             let hor_adj: Val = Val::Px(43.);
             let vir_adj: Val = Val::Px(205.);
             let pos = Rect {
@@ -155,7 +124,7 @@ fn spawn_name_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, f
             };
             spawn_ui(pos)
         }
-        ScreenPosition::Left=> {
+        Allegiance::Ally => {
             let hor_adj: Val = Val::Px(30.);
             let vir_adj: Val = Val::Px(5.);
             let pos = Rect {
@@ -166,4 +135,28 @@ fn spawn_name_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, f
             spawn_ui(pos)
         }
     }
+}
+fn spawn_pokemon_sprite(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
+    let id: String = format!("sprites/{}_sprite.png", fighter.name.to_lowercase().clone());
+    println!("id: {}", id);
+    let mut spawn_sprite = |transform: Transform| {
+        commands.spawn_bundle(SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::splat(SPRITE_SIZE.clone())),
+                ..default()
+            },
+            transform: transform.clone(),
+            texture: asset_server.get_handle(id.as_str()).clone(),
+            ..default()
+        });
+    };
+    match fighter.allegiance.as_ref().unwrap() {
+        Allegiance::Ally => {
+            spawn_sprite(RIGHT_FIGHTER_TRANSFORM);
+        }
+        Allegiance::Enemy => {
+            spawn_sprite(LEFT_FIGHTER_TRANSFORM);
+        }
+    }
+
 }

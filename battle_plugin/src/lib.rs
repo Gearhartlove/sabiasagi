@@ -3,6 +3,11 @@ use bevy::prelude::*;
 use crate::pokemon_roster::Pokemon;
 use bevy_inspector_egui::{Inspectable};
 
+#[derive(Debug, Inspectable)]
+pub enum Allegiance {
+    Ally,
+    Enemy,
+}
 
 // pub fn create_fighter(){}
 //coulddo: make fighter a trait and then require that certain
@@ -13,8 +18,11 @@ pub struct Fighter{
     pub name: String,
     pub hit_points: f32,
     pub level: i32,
+    pub allegiance: Option<Allegiance>,
     // ability: Box<Vec<Ability>>,
 }
+
+
 
 impl Default for Fighter {
     fn default() -> Self {
@@ -22,16 +30,18 @@ impl Default for Fighter {
             name: "default_name".to_string(),
             hit_points: -1.,
             level: 1000,
+            allegiance: None,
         }
     }
 }
 
 impl Fighter {
-    pub fn new(pokemon: Pokemon, hit_points: f32, level: i32) -> Self {
+    pub fn new(pokemon: Pokemon, hit_points: f32, level: i32, allegiance: Allegiance) -> Self {
         Fighter {
             name: pokemon.to_string(),
             hit_points,
             level,
+            allegiance: Some(allegiance),
         }
     }
 }
