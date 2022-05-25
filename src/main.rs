@@ -10,6 +10,9 @@ use crate::AlignContent::Center;
 
 // reference : https://www.youtube.com/watch?v=s_4zaj8EbFI&t=757s
 
+// IDEA: press a button to generate a different match up with
+// different levels and everything :)
+
 fn main() {
     let mut app = App::new();
     app
@@ -65,7 +68,7 @@ fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
         Pokemon::Weedle, 25., 6, Allegiance::Enemy,
     );
     let charmeleon = Fighter::new(
-        Pokemon::Charmeleon, 25., 25, Allegiance::Ally,
+        Pokemon::Charmeleon, 145., 25, Allegiance::Ally,
     );
 
     // spawn ui
@@ -81,6 +84,7 @@ fn spawn_pokemon_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>
     spawn_health_bar_text(&mut commands, &asset_server, &fighter);
     // Dynamic Assets
     spawn_health_bar(&mut commands, &asset_server, &fighter);
+    spawn_health_bar_number(&mut commands, &asset_server, &fighter);
     // . . .
 }
 
@@ -203,6 +207,9 @@ fn spawn_pokemon_level(mut commands: &mut Commands, asset_server: &Res<AssetServ
     }
 }
 
+#[derive(Component)]
+struct HpBar;
+
 fn spawn_health_bar(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
     println!("health bar spawned");
     let mut spawn_health_bar = |translation: Vec3, scale: Vec3| {
@@ -220,7 +227,7 @@ fn spawn_health_bar(mut commands: &mut Commands, asset_server: &Res<AssetServer>
                 ..default()
             }
         )
-            .insert(Healthbar);
+            .insert(HpBar);
     };
     match fighter.allegiance.as_ref().unwrap() {
         Allegiance::Ally => {
@@ -286,11 +293,50 @@ fn spawn_health_bar_text(mut commands: &mut Commands, asset_server: &Res<AssetSe
     }
 }
 
-// debugging
 #[derive(Component)]
-struct Healthbar;
+struct HpNumber;
 
+fn spawn_health_bar_number(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
+    let mut spawn_text = |position: Rect<Val>| {
+        commands.spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position,
+                ..default()
+            },
+            // left pokemon name text
+            text: Text::with_section(
+                format!("{}/{}", fighter.current_hit_points.clone().round(), fighter.total_hit_points.clone().round()),
+                TextStyle {
+                    font: asset_server.load(BOLD_FONT_PATH),
+                    font_size: HP_NUMBER_FONT_SIZE,
+                    color: Color::BLACK,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    ..default()
+                },
+            ),
+            ..default()
+        })
+            .insert(HpNumber);
+    };
+
+    match fighter.allegiance.as_ref().unwrap() {
+        Allegiance::Ally => {
+            let pos = Rect {
+                left: Val::Px(64.),
+                top: Val::Px(100.),
+                ..default()
+            };
+            spawn_text(pos)
+        }
+        // Don't spawn health info for enemy
+        Allegiance::Enemy => {}
+    }
+}
+// couldo : implement the non-pokemon specific ui
 // NON-POKEMON SPECIFIC UI
 // fn spawn_border_arrow(mut commands: &mut commands, asset_server: &res<AssetServer>, fighter: &fighter) {}
-
 // fn spawn_lower_menus(mut commands: &mut commands, asset_server: &res<AssetServer>, fighter: &fighter) {}

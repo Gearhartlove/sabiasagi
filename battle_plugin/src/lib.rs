@@ -1,4 +1,6 @@
 pub mod pokemon_roster;
+mod pokemon_generation;
+
 use bevy::prelude::*;
 use crate::pokemon_roster::Pokemon;
 use bevy_inspector_egui::{Inspectable};
@@ -16,7 +18,8 @@ pub enum Allegiance {
 #[derive(Component, Debug, Inspectable)]
 pub struct Fighter{
     pub name: String,
-    pub hit_points: f32,
+    pub total_hit_points: f32,
+    pub current_hit_points: f32,
     pub level: i32,
     pub allegiance: Option<Allegiance>,
     // ability: Box<Vec<Ability>>,
@@ -28,7 +31,8 @@ impl Default for Fighter {
     fn default() -> Self {
         Fighter {
             name: "default_name".to_string(),
-            hit_points: -1.,
+            total_hit_points: -1.,
+            current_hit_points: -1.,
             level: 1000,
             allegiance: None,
         }
@@ -39,7 +43,8 @@ impl Fighter {
     pub fn new(pokemon: Pokemon, hit_points: f32, level: i32, allegiance: Allegiance) -> Self {
         Fighter {
             name: pokemon.to_string(),
-            hit_points,
+            total_hit_points: hit_points.clone(),
+            current_hit_points: hit_points.clone(),
             level,
             allegiance: Some(allegiance),
         }
