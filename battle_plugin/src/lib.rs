@@ -74,3 +74,7 @@ pub struct ArenaAssets {
     // couldo: retro theme on top of the whole project -> imagine this has to do with shaders . . .
     // pub arena: Handle<Image>, todo: add arena background loading
 }
+
+pub fn parse_pokedex() {
+    pokemon_generation::parse_pokedex();
+}

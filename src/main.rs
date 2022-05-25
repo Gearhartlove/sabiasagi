@@ -14,26 +14,27 @@ use crate::AlignContent::Center;
 // different levels and everything :)
 
 fn main() {
-    let mut app = App::new();
-    app
-        // todo: register fighter as inspectable
-        // .register_inspectable::<Fighter>()
-        .insert_resource(WindowDescriptor {
-            title: "konkuRRenz".to_string(),
-            width: WINDOW_WIDTH,
-            height: WINDOW_HEIGHT,
-            ..default()
-        })
-        .insert_resource(ClearColor(Color::rgb(1., 1., 1.)))
-        .add_plugins(DefaultPlugins)
-        .add_plugin(WorldInspectorPlugin::new())
-        // .add_plugin(InspectorPlugin::<Fighter>::new())
-        .add_startup_system_to_stage(PreStartup, setup_assets)
-        .add_startup_system(setup_arena)
-        .add_startup_system(camera_setup)
-        .add_startup_system(ui_camera_setup)
-        // .add_system(debug_fighters)
-        .run();
+    battle_plugin::parse_pokedex();
+    // let mut app = App::new();
+    // app
+    //     // todo: register fighter as inspectable
+    //     // .register_inspectable::<Fighter>()
+    //     .insert_resource(WindowDescriptor {
+    //         title: "konkuRRenz".to_string(),
+    //         width: WINDOW_WIDTH,
+    //         height: WINDOW_HEIGHT,
+    //         ..default()
+    //     })
+    //     .insert_resource(ClearColor(Color::rgb(1., 1., 1.)))
+    //     .add_plugins(DefaultPlugins)
+    //     .add_plugin(WorldInspectorPlugin::new())
+    //     // .add_plugin(InspectorPlugin::<Fighter>::new())
+    //     .add_startup_system_to_stage(PreStartup, setup_assets)
+    //     .add_startup_system(setup_arena)
+    //     .add_startup_system(camera_setup)
+    //     .add_startup_system(ui_camera_setup)
+    //     // .add_system(debug_fighters)
+    //     .run();
 }
 
 fn camera_setup(mut commands: Commands) {
