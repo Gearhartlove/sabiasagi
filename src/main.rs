@@ -30,7 +30,6 @@ fn main() {
         .add_startup_system(camera_setup)
         .add_startup_system(ui_camera_setup)
         // .add_system(debug_fighters)
-        .add_startup_system(debug_UI)
         .run();
 }
 
@@ -45,12 +44,6 @@ fn ui_camera_setup(mut commands: Commands) {
 fn debug_fighters(query: Query<&Fighter>) {
     for fighter in query.iter() {
         println!("{:?}", fighter);
-    }
-}
-
-fn debug_UI(query: Query<&Text>) {
-    for text in query.iter() {
-        println!("{:?}", text);
     }
 }
 
@@ -85,10 +78,13 @@ fn spawn_pokemon_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>
     spawn_pokemon_sprite(&mut commands, &asset_server, &fighter);
     spawn_pokemon_name(&mut commands, &asset_server, &fighter);
     spawn_pokemon_level(&mut commands, &asset_server, &fighter);
+    spawn_health_bar_text(&mut commands, &asset_server, &fighter);
     // Dynamic Assets
+    spawn_health_bar(&mut commands, &asset_server, &fighter);
     // . . .
 }
 
+// POKEMON SPECIFIC UI
 fn spawn_pokemon_name(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
     let mut spawn_ui = |position: Rect<Val>| {
         commands.spawn_bundle(TextBundle {
@@ -206,3 +202,95 @@ fn spawn_pokemon_level(mut commands: &mut Commands, asset_server: &Res<AssetServ
         }
     }
 }
+
+fn spawn_health_bar(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
+    println!("health bar spawned");
+    let mut spawn_health_bar = |translation: Vec3, scale: Vec3| {
+        commands.spawn_bundle(
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgb_u8(105, 152, 105),
+                    ..default()
+                },
+                transform: Transform {
+                    translation,
+                    scale,
+                    ..default()
+                },
+                ..default()
+            }
+        )
+            .insert(Healthbar);
+    };
+    match fighter.allegiance.as_ref().unwrap() {
+        Allegiance::Ally => {
+            let translation = Vec3::new(-108.8, 102.1, 0.);
+            let scale = Vec3::new(168.2, 10.7, UI_LEVEL);
+            spawn_health_bar(translation, scale);
+        }
+        Allegiance::Enemy => {
+            let translation = Vec3::new(128.0, -28.5, 0.);
+            let scale = Vec3::new(168.2, 10.7, UI_LEVEL);
+            spawn_health_bar(translation, scale);
+        }
+    };
+}
+
+#[derive(Component)]
+struct HpText;
+
+fn spawn_health_bar_text(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
+    let mut spawn_text = |position: Rect<Val>| {
+        commands.spawn_bundle(TextBundle {
+            style: Style {
+                align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position,
+                ..default()
+            },
+            // left pokemon name text
+            text: Text::with_section(
+                format!("HP:"),
+                TextStyle {
+                    font: asset_server.load(BOLD_FONT_PATH),
+                    font_size: HP_WORD_FONT_SIZE,
+                    color: Color::BLACK,
+                },
+                TextAlignment {
+                    horizontal: HorizontalAlign::Center,
+                    ..default()
+                },
+            ),
+            ..default()
+        })
+            .insert(HpText);
+    };
+
+    match fighter.allegiance.as_ref().unwrap() {
+        Allegiance::Ally => {
+            let pos = Rect {
+                left: Val::Px(22.),
+                top: Val::Px(75.),
+                ..default()
+            };
+            spawn_text(pos)
+        }
+        Allegiance::Enemy => {
+            let pos = Rect {
+                right: Val::Px(218.),
+                bottom: Val::Px(153.),
+                ..default()
+            };
+            spawn_text(pos)
+        }
+    }
+}
+
+// debugging
+#[derive(Component)]
+struct Healthbar;
+
+// NON-POKEMON SPECIFIC UI
+// fn spawn_border_arrow(mut commands: &mut commands, asset_server: &res<AssetServer>, fighter: &fighter) {}
+
+// fn spawn_lower_menus(mut commands: &mut commands, asset_server: &res<AssetServer>, fighter: &fighter) {}

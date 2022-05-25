@@ -5,11 +5,14 @@ pub const WINDOW_HEIGHT: f32 = 384.;
 pub const SPRITE_SIZE: f32 = 32. * 5.;
 
 // UI Related
+pub const UI_LEVEL: f32 = 100.;
 pub const FONT_PATH: &str = "fonts/JetBrainsMono-SemiBold.ttf";
 pub const BOLD_FONT_PATH: &str = "fonts/JetBrainsMono-ExtraBold.ttf";
 pub const TEXT_OFFSET: f32 = 20.;
 pub const NAME_FONT_SIZE: f32 = 40.;
 pub const LEVEL_FONT_SIZE: f32 = 30.;
+pub const HP_WORD_FONT_SIZE: f32 = 26.;
+pub const HP_NUMBER_FONT_SIZE: f32 = 26.;
 
 const ARBITRARY_Y_VAL: f32 = 100.;
 const ARBITRARY_X_VAL: f32 = 30.;
