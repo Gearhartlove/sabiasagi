@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::pokemon_roster::Pokemon;
 use bevy_inspector_egui::{Inspectable};
 
-#[derive(Debug, Inspectable)]
+#[derive(Debug, Inspectable, Clone)]
 pub enum Allegiance {
     Ally,
     Enemy,
@@ -15,7 +15,7 @@ pub enum Allegiance {
 //coulddo: make fighter a trait and then require that certain
 //values are returned (would work with custom fighters)
 // #[derive(Component, Inspectable, Debug)]
-#[derive(Component, Debug, Inspectable)]
+#[derive(Component, Debug, Inspectable, Clone)]
 pub struct Fighter{
     pub name: String,
     pub total_hit_points: f32,
@@ -75,6 +75,6 @@ pub struct ArenaAssets {
     // pub arena: Handle<Image>, todo: add arena background loading
 }
 
-pub fn parse_pokedex() {
-    pokemon_generation::parse_pokedex();
+pub fn generate() {
+    pokemon_generation::generator_driver();
 }

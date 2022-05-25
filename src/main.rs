@@ -14,7 +14,7 @@ use crate::AlignContent::Center;
 // different levels and everything :)
 
 fn main() {
-    battle_plugin::parse_pokedex();
+    battle_plugin::generate();
     // let mut app = App::new();
     // app
     //     // todo: register fighter as inspectable
