@@ -9,3 +9,7 @@ edition = "2021"
 bevy = "0.7.0"
 bevy-inspector-egui = "0.11.0"
 rand = "0.8.5"
+scraper = "0.13.0"
+#Note: study up on working with Cargo.toml, this is how everything talks to each other :)
+reqwest = { version = "0.11.10", features = ["blocking"] }
+image = "0.24.2"

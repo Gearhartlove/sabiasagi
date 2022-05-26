@@ -1,4 +1,3 @@
-// resource: https://www.pokencyclopedia.info/en/index.php?id=sprites/gen1
 // spreadsheet: https://docs.google.com/spreadsheets/d/1DYnYR1bu1oRQ5ZMNwl5emfYzoYkr6P-JvULtYUTGtSg/edit#gid=0
 
 // Consider each pokemon in Generation 1.
@@ -15,16 +14,20 @@
 // go to website and consider each image.
 use std::env;
 use std::fs;
+use std::io::Read;
 use std::process::exit;
 use bevy::math::i32;
 use bevy::utils::HashMap;
-use crate::Fighter;
+use crate::{Fighter, Pokemon};
 use rand::Rng;
+use scraper::{Html, Selector};
 
 pub fn generator_driver() {
     let mut fighter_map: HashMap<String, Fighter> = HashMap::default();
     parse_pokedex(&mut fighter_map);
-    get_images_from_web();
+    // q: do I want to put images on fighters?, then pass fighter_map as a resource?
+    // called: Web Scraping for Images > I don't have to use rust ...
+    scrape_pokemon_web_images(&mut fighter_map);
     // look into web api ? and then grabbing the sprites based on the names
 
 }
@@ -83,6 +86,32 @@ fn parse_pokedex(mut fighter_map: &mut HashMap<String, Fighter>) {
 
 }
 
-fn get_images_from_web() {
+// Note: deciding not to get html using reqwest or other libraries because of async problems . . .
+// outside the scope of what I need to do
+const SPRITES_BASE_URL: &str = "https://www.pokencyclopedia.info";
+fn scrape_pokemon_web_images(mut fighter_map: &mut HashMap<String, Fighter>)
+    -> Result<(), reqwest::Error>{
+    let back_file_path = "assets/pokemon_back_sprites.html";
+    let front_file_path = "assets/pokemon_front_sprites.html";
+    let html = fs::read_to_string(back_file_path)
+        .expect(format!("The file {} does not exist", back_file_path).as_str());
 
+    let fragment = Html::parse_fragment(html.as_str()) ;
+    let selector = Selector::parse("img").unwrap();
+
+    for element in fragment.select(&selector) {
+        let src = element.value().attr("src");
+        let url = format!("{}{}", SPRITES_BASE_URL.clone(), src.unwrap().clone());
+
+        // debug here
+        // get image from web
+        let img_bytes = reqwest::blocking::get(url)?.bytes()?;
+        let image = image::load_from_memory(&img_bytes);
+        println!("saved image");
+        image.unwrap().save("pokemon.png");
+        println!("saved image");
+    }
+
+    Ok(())
+    // let selector = Selector::parse("a").unwrap();
 }
