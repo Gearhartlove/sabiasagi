@@ -11,28 +11,24 @@
 
 // Connect the file to file_structure
 
+use std::collections::HashMap;
 // go to website and consider each image.
 use std::env;
 use std::fs;
 use std::io::Read;
 use std::process::exit;
 use bevy::math::i32;
-use bevy::utils::HashMap;
 use crate::{Fighter, Pokemon};
 use rand::Rng;
 use scraper::{Html, Selector};
 
-pub fn generator_driver() {
-    let mut fighter_map: HashMap<String, Fighter> = HashMap::default();
+pub fn generator_driver() -> HashMap<i32, Fighter> {
+    let mut fighter_map: HashMap<i32, Fighter> = HashMap::default();
     parse_pokedex(&mut fighter_map);
-    // q: do I want to put images on fighters?, then pass fighter_map as a resource?
-    // called: Web Scraping for Images > I don't have to use rust ...
-    scrape_pokemon_web_images();
-    // look into web api ? and then grabbing the sprites based on the names
-
+    fighter_map
 }
 
-fn parse_pokedex(mut fighter_map: &mut HashMap<String, Fighter>) {
+fn parse_pokedex(mut fighter_map: &mut HashMap<i32, Fighter>) {
     let file_path = "assets/data/Pokedex.csv";
     let contents = fs::read_to_string(file_path)
         .expect(format!("The file {} does not exist", file_path).as_str());
@@ -70,20 +66,13 @@ fn parse_pokedex(mut fighter_map: &mut HashMap<String, Fighter>) {
             allegiance: None
         };
 
-        fighter_map.insert(name, fighter);
-
         let num = number.parse::<usize>().unwrap();
         if num > GEN1_STOP {
             // Note: be careful with exits, as it will stop the entire program :)
             break
         }
+        fighter_map.insert(num as i32, fighter);
     }
-
-    // logic break -------------------------------
-    // for pair in fighter_map.into_iter() {
-    //     println!("{:?}", pair);
-    // }
-
 }
 
 // Note: deciding not to get html using reqwest or other libraries because of async problems . . .

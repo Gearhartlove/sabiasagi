@@ -1,9 +1,11 @@
 pub mod pokemon_roster;
 mod pokemon_generation;
 
+use std::collections::HashMap;
 use bevy::prelude::*;
 use crate::pokemon_roster::Pokemon;
 use bevy_inspector_egui::{Inspectable};
+use crate::Allegiance::Ally;
 
 #[derive(Debug, Inspectable, Clone)]
 pub enum Allegiance {
@@ -25,21 +27,17 @@ pub struct Fighter{
     // ability: Box<Vec<Ability>>,
 }
 
-
-
-impl Default for Fighter {
-    fn default() -> Self {
+impl Fighter {
+    pub fn default(allegiance: Allegiance) -> Self {
         Fighter {
-            name: "default_name".to_string(),
-            total_hit_points: -1.,
-            current_hit_points: -1.,
-            level: 1000,
-            allegiance: None,
+            name: "Pikachu".to_string(),
+            total_hit_points: 45.,
+            current_hit_points: 45.,
+            level: 23,
+            allegiance: Some(allegiance),
         }
     }
-}
 
-impl Fighter {
     pub fn new(pokemon: Pokemon, hit_points: f32, level: i32, allegiance: Allegiance) -> Self {
         Fighter {
             name: pokemon.to_string(),
@@ -49,6 +47,17 @@ impl Fighter {
             allegiance: Some(allegiance),
         }
     }
+
+    pub fn ally(mut self) -> Self {
+        self.allegiance = Some(Allegiance::Ally);
+        self
+    }
+
+    pub fn enemy(mut self) -> Self {
+        self.allegiance = Some(Allegiance::Enemy);
+        self
+    }
+
 }
 
 struct Ability {
@@ -75,6 +84,6 @@ pub struct ArenaAssets {
     // pub arena: Handle<Image>, todo: add arena background loading
 }
 
-pub fn generate() {
-    pokemon_generation::generator_driver();
+pub fn generate_fighters_map() -> HashMap<i32, Fighter> {
+    pokemon_generation::generator_driver()
 }

@@ -1,12 +1,16 @@
 mod constants;
 
+use std::collections::HashMap;
 use constants::*;
 use bevy::prelude::*;
+use bevy::winit::WinitSettings;
 use battle_plugin::*;
 use battle_plugin::pokemon_roster::Pokemon;
 use crate::StartupStage::PreStartup;
 use bevy_inspector_egui::{InspectorPlugin, RegisterInspectable, WorldInspectorPlugin};
 use crate::AlignContent::Center;
+use rand::Rng;
+use crate::CoreStage::First;
 
 // reference : https://www.youtube.com/watch?v=s_4zaj8EbFI&t=757s
 
@@ -14,27 +18,92 @@ use crate::AlignContent::Center;
 // different levels and everything :)
 
 fn main() {
-    battle_plugin::generate();
-    // let mut app = App::new();
-    // app
-    //     // todo: register fighter as inspectable
-    //     // .register_inspectable::<Fighter>()
-    //     .insert_resource(WindowDescriptor {
-    //         title: "konkuRRenz".to_string(),
-    //         width: WINDOW_WIDTH,
-    //         height: WINDOW_HEIGHT,
-    //         ..default()
-    //     })
-    //     .insert_resource(ClearColor(Color::rgb(1., 1., 1.)))
-    //     .add_plugins(DefaultPlugins)
-    //     .add_plugin(WorldInspectorPlugin::new())
-    //     // .add_plugin(InspectorPlugin::<Fighter>::new())
-    //     .add_startup_system_to_stage(PreStartup, setup_assets)
-    //     .add_startup_system(setup_arena)
-    //     .add_startup_system(camera_setup)
-    //     .add_startup_system(ui_camera_setup)
-    //     // .add_system(debug_fighters)
-    //     .run();
+    let mut app = App::new();
+    app
+        .insert_resource(WindowDescriptor {
+            title: "konkuRRenz".to_string(),
+            width: WINDOW_WIDTH,
+            height: WINDOW_HEIGHT,
+            ..default()
+        })
+        .insert_resource(battle_plugin::generate_fighters_map())
+        .insert_resource(ClearColor(Color::rgb(1., 1., 1.)))
+        // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
+        .insert_resource(WinitSettings::desktop_app())
+        .add_plugins(DefaultPlugins)
+        .add_plugin(WorldInspectorPlugin::new())
+        .add_startup_system_to_stage(PreStartup, setup_assets)
+        .add_startup_system(setup_arena)
+        .add_startup_system(camera_setup)
+        .add_startup_system(ui_camera_setup)
+        .add_startup_system(button_setup)
+        .add_system(button_style_system)
+        // .add_system(debug_fighters)
+        .run();
+}
+
+// fn mouse_click_system(mouse_button_input: Res<Input<MouseButton>>) {
+//     if mouse_button_input.pressed(MouseButton::Left) {
+//         info!("left mouse currently pressed");
+//     }
+// }
+
+#[derive(Component)]
+struct CustomButton;
+
+fn button_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands
+        .spawn_bundle(ButtonBundle {
+            style: Style {
+                size: Size::new(Val::Px(200.), Val::Px(40.)),
+                //center button
+                margin: Rect {
+                    bottom: Val::Px(70.),
+                    left: Val::Px(310.),
+                    ..default()
+                },
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            color: bevy::prelude::UiColor(Color::GRAY),
+            ..default()
+        })
+        .insert(CustomButton)
+        .with_children(|parent| {
+            parent.spawn_bundle(TextBundle {
+                text: Text::with_section(
+                    "Randomize",
+                    TextStyle {
+                        font: asset_server.load(FONT_PATH.clone()),
+                        font_size: 40.,
+                        color: Color::BLACK,
+                    },
+                    Default::default(),
+                ),
+                ..default()
+            });
+        });
+
+}
+
+fn button_style_system(mut interaction_query: Query<(&Interaction, &mut UiColor, &Children),
+    (Changed<Interaction>, With<CustomButton>)>, mut text_query: Query<&mut Text>) {
+    for (interaction, mut color, children) in interaction_query.iter_mut() {
+        let mut text = text_query.get_mut(children[0]).unwrap();
+        match *interaction {
+            Interaction::Clicked => {
+                *color = bevy::prelude::UiColor(Color::LIME_GREEN).into();
+
+            }
+            Interaction::Hovered => {
+                *color = bevy::prelude::UiColor(Color::SEA_GREEN).into();
+            }
+            Interaction::None => {
+                *color = bevy::prelude::UiColor(Color::GRAY).into();
+            }
+        }
+    }
 }
 
 fn camera_setup(mut commands: Commands) {
@@ -51,30 +120,41 @@ fn debug_fighters(query: Query<&Fighter>) {
     }
 }
 
-fn setup_assets(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // note: path starts from the /assets server
-    commands.insert_resource(ArenaAssets {
-        left_fighter_sprite: asset_server.load("sprites/charmeleon_sprite.png"),
-        right_figher_sprite: asset_server.load("sprites/weedle_sprite.png"),
-        // arena:
-    });
+
+fn spawn_random_new_fighters(fighter_map: Res<HashMap<i32, Fighter>>) -> (Fighter, Fighter) {
+    let mut rng = rand::thread_rng();
+    let ally_num = rng.gen_range(1..152);
+    let enemy_num = rng.gen_range(1..152);
+
+    let ally_fighter = fighter_map.get(&ally_num).cloned().unwrap().ally();
+    let enemy_fighter = fighter_map.get(&enemy_num).cloned().unwrap().enemy();
+    (ally_fighter, enemy_fighter)
 }
 
-// todo: think about how i want to connect all of the ui elements to the fighters
-//  could append the fighter to each tag, or make a p1 and p2 component and append it likewise,
-//  or ???
-fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>) {
-    // create fighters
-    let weedle = Fighter::new(
-        Pokemon::Weedle, 25., 6, Allegiance::Enemy,
-    );
-    let charmeleon = Fighter::new(
-        Pokemon::Charmeleon, 145., 25, Allegiance::Ally,
-    );
+fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>,
+               fighter_map: Res<HashMap<i32, Fighter>>) {
+    let (ally_fighter, enemy_fighter) = spawn_random_new_fighters(fighter_map);
 
+    // explicit fighters, numbers to pokemon
+    // couldo: write a converter . . .
+    // let ally_figher = fighter_map.get(&ally_num).cloned().ally();
+    // let enemy_fighter = fighter_map.get(&ally_num).cloned().ally();
     // spawn ui
-    spawn_pokemon_ui(&mut commands, &asset_server, &weedle);
-    spawn_pokemon_ui(&mut commands, &asset_server, &charmeleon);
+
+    spawn_pokemon_ui(&mut commands, &asset_server, &ally_fighter);
+    spawn_pokemon_ui(&mut commands, &asset_server, &enemy_fighter);
+}
+
+
+fn setup_assets(mut commands: Commands, asset_server: Res<AssetServer>, fighter_map: Res<HashMap<i32, Fighter>>) {
+    for fighter in fighter_map.values() {
+        let back_id: String = format!("sprites/back_sprites/{}_back.png", fighter.name.clone());
+        let front_id: String = format!("sprites/front_sprites/{}_front.png", fighter.name.clone());
+        let back_fighter_sprite: Handle<Image> = asset_server.load(&back_id);
+        let front_fighter_sprite: Handle<Image> = asset_server.load(&front_id);
+        commands.insert_resource(back_fighter_sprite);
+        commands.insert_resource(front_fighter_sprite);
+    }
 }
 
 fn spawn_pokemon_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
@@ -118,7 +198,7 @@ fn spawn_pokemon_name(mut commands: &mut Commands, asset_server: &Res<AssetServe
     match fighter.allegiance.as_ref().unwrap() {
         Allegiance::Enemy => {
             let hor_adj: Val = Val::Px(43.);
-            let vir_adj: Val = Val::Px(205.);
+            let vir_adj: Val = Val::Px(205. - 15.);
             let pos = Rect {
                 right: hor_adj,
                 bottom: vir_adj,
@@ -140,9 +220,7 @@ fn spawn_pokemon_name(mut commands: &mut Commands, asset_server: &Res<AssetServe
 }
 
 fn spawn_pokemon_sprite(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
-    let id: String = format!("sprites/{}_sprite.png", fighter.name.to_lowercase().clone());
-    println!("id: {}", id);
-    let mut spawn_sprite = |transform: Transform| {
+    let mut spawn_sprite = |transform: Transform, id: String| {
         commands.spawn_bundle(SpriteBundle {
             sprite: Sprite {
                 custom_size: Some(Vec2::splat(SPRITE_SIZE.clone())),
@@ -155,10 +233,14 @@ fn spawn_pokemon_sprite(mut commands: &mut Commands, asset_server: &Res<AssetSer
     };
     match fighter.allegiance.as_ref().unwrap() {
         Allegiance::Ally => {
-            spawn_sprite(RIGHT_FIGHTER_TRANSFORM);
+            let id: String = format!("sprites/back_sprites/{}_back.png", fighter.name.clone());
+            println!("{}", id);
+            spawn_sprite(RIGHT_FIGHTER_TRANSFORM, id);
         }
         Allegiance::Enemy => {
-            spawn_sprite(LEFT_FIGHTER_TRANSFORM);
+            let id: String = format!("sprites/front_sprites/{}_front.png", fighter.name.clone());
+            println!("{}", id);
+            spawn_sprite(LEFT_FIGHTER_TRANSFORM, id);
         }
     }
 }
@@ -200,7 +282,7 @@ fn spawn_pokemon_level(mut commands: &mut Commands, asset_server: &Res<AssetServ
         Allegiance::Enemy => {
             let pos = Rect {
                 right: Val::Px(70.),
-                bottom: Val::Px(180.),
+                bottom: Val::Px(165.),
                 ..default()
             };
             spawn_ui(pos)
@@ -237,7 +319,7 @@ fn spawn_health_bar(mut commands: &mut Commands, asset_server: &Res<AssetServer>
             spawn_health_bar(translation, scale);
         }
         Allegiance::Enemy => {
-            let translation = Vec3::new(128.0, -28.5, 0.);
+            let translation = Vec3::new(128.0, -28.5 - 15., 0.);
             let scale = Vec3::new(168.2, 10.7, UI_LEVEL);
             spawn_health_bar(translation, scale);
         }
@@ -286,7 +368,7 @@ fn spawn_health_bar_text(mut commands: &mut Commands, asset_server: &Res<AssetSe
         Allegiance::Enemy => {
             let pos = Rect {
                 right: Val::Px(218.),
-                bottom: Val::Px(153.),
+                bottom: Val::Px(153. - 15.),
                 ..default()
             };
             spawn_text(pos)

@@ -2308,6 +2308,7 @@ dependencies = [
  "battle_plugin",
  "bevy",
  "bevy-inspector-egui",
+ "rand 0.8.5",
 ]
 
 [[package]]
