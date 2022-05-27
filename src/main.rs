@@ -1,6 +1,7 @@
 mod constants;
 
 use std::collections::HashMap;
+use std::time::Duration;
 use constants::*;
 use bevy::prelude::*;
 use bevy::winit::WinitSettings;
@@ -30,23 +31,21 @@ fn main() {
         .insert_resource(ClearColor(Color::rgb(1., 1., 1.)))
         // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
         .insert_resource(WinitSettings::desktop_app())
+        .insert_resource(RandomizeTimer(Timer::new(std::time::Duration::from_secs_f32(1.0), true)))
         .add_plugins(DefaultPlugins)
-        .add_plugin(WorldInspectorPlugin::new())
-        .add_startup_system_to_stage(PreStartup, setup_assets)
-        .add_startup_system(setup_arena)
+        // .add_plugin(WorldInspectorPlugin::new())
+        // .add_startup_system_to_stage(PreStartup, setup_assets)
+        // .add_startup_system(randomize_arena)
         .add_startup_system(camera_setup)
         .add_startup_system(ui_camera_setup)
-        .add_startup_system(button_setup)
-        .add_system(button_style_system)
-        // .add_system(debug_fighters)
+        .add_startup_system(initialize_arena)
+        .add_system(randomize_arena)
+        // .add_system(setup_assets)
+        // .add_system(setup_arena)
+        // .add_startup_system(button_setup)
+        // .add_system(button_style_system)
         .run();
 }
-
-// fn mouse_click_system(mouse_button_input: Res<Input<MouseButton>>) {
-//     if mouse_button_input.pressed(MouseButton::Left) {
-//         info!("left mouse currently pressed");
-//     }
-// }
 
 #[derive(Component)]
 struct CustomButton;
@@ -84,7 +83,6 @@ fn button_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             });
         });
-
 }
 
 fn button_style_system(mut interaction_query: Query<(&Interaction, &mut UiColor, &Children),
@@ -94,7 +92,6 @@ fn button_style_system(mut interaction_query: Query<(&Interaction, &mut UiColor,
         match *interaction {
             Interaction::Clicked => {
                 *color = bevy::prelude::UiColor(Color::LIME_GREEN).into();
-
             }
             Interaction::Hovered => {
                 *color = bevy::prelude::UiColor(Color::SEA_GREEN).into();
@@ -131,33 +128,64 @@ fn spawn_random_new_fighters(fighter_map: Res<HashMap<i32, Fighter>>) -> (Fighte
     (ally_fighter, enemy_fighter)
 }
 
-fn setup_arena(mut commands: Commands, asset_server: Res<AssetServer>,
-               fighter_map: Res<HashMap<i32, Fighter>>) {
-    let (ally_fighter, enemy_fighter) = spawn_random_new_fighters(fighter_map);
+struct RandomizeTimer(Timer);
 
-    // explicit fighters, numbers to pokemon
-    // couldo: write a converter . . .
-    // let ally_figher = fighter_map.get(&ally_num).cloned().ally();
-    // let enemy_fighter = fighter_map.get(&ally_num).cloned().ally();
-    // spawn ui
+fn randomize_arena(mut timer: ResMut<RandomizeTimer>, query: Query<Entity, With<PokemonUI>>,
+                   mut commands: Commands, asset_server: Res<AssetServer>,
+                   fighter_map: Res<HashMap<i32, Fighter>>) {
+    // tick timer
+    timer.0.tick(Duration::from_secs_f32(0.01));
+
+    if timer.0.finished() {
+        timer.0.reset();
+
+        // clear ui
+        for e in query.iter() {
+            commands.entity(e).despawn();
+        }
+
+        // get random fighter
+        let (ally_fighter, enemy_fighter) = spawn_random_new_fighters(fighter_map);
+
+        let back_id: String = format!("sprites/back_sprites/{}_back.png", enemy_fighter.name.clone());
+        let front_id: String = format!("sprites/front_sprites/{}_front.png", ally_fighter.name.clone());
+        let back_fighter_sprite: Handle<Image> = asset_server.load(&back_id);
+        let front_fighter_sprite: Handle<Image> = asset_server.load(&front_id);
+
+        // spawn pokemon ui
+        spawn_pokemon_ui(&mut commands, &asset_server, &ally_fighter);
+        spawn_pokemon_ui(&mut commands, &asset_server, &enemy_fighter);
+    }
+}
+
+fn initialize_arena(mut commands: Commands, asset_server: Res<AssetServer>,
+                    fighter_map: Res<HashMap<i32, Fighter>>) {
+    let ally_fighter = fighter_map.get(&143).unwrap().clone().ally();
+    let enemy_fighter = fighter_map.get(&1).unwrap().clone().enemy();
+
+    let back_id: String = format!("sprites/back_sprites/{}_back.png", ally_fighter.name.clone());
+    let front_id: String = format!("sprites/front_sprites/{}_front.png", enemy_fighter.name.clone());
+    let back_fighter_sprite: Handle<Image> = asset_server.load(&back_id);
+    let front_fighter_sprite: Handle<Image> = asset_server.load(&front_id);
 
     spawn_pokemon_ui(&mut commands, &asset_server, &ally_fighter);
     spawn_pokemon_ui(&mut commands, &asset_server, &enemy_fighter);
 }
 
+// fn setup_assets(mut commands: Commands, asset_server: Res<AssetServer>, fighter_map: Res<HashMap<i32, Fighter>>) {
+//     for fighter in fighter_map.values() {
+//         let back_id: String = format!("sprites/back_sprites/{}_back.png", fighter.name.clone());
+//         let front_id: String = format!("sprites/front_sprites/{}_front.png", fighter.name.clone());
+//         let back_fighter_sprite: Handle<Image> = asset_server.load(&back_id);
+//         let front_fighter_sprite: Handle<Image> = asset_server.load(&front_id);
+//     }
+// }
 
-fn setup_assets(mut commands: Commands, asset_server: Res<AssetServer>, fighter_map: Res<HashMap<i32, Fighter>>) {
-    for fighter in fighter_map.values() {
-        let back_id: String = format!("sprites/back_sprites/{}_back.png", fighter.name.clone());
-        let front_id: String = format!("sprites/front_sprites/{}_front.png", fighter.name.clone());
-        let back_fighter_sprite: Handle<Image> = asset_server.load(&back_id);
-        let front_fighter_sprite: Handle<Image> = asset_server.load(&front_id);
-        commands.insert_resource(back_fighter_sprite);
-        commands.insert_resource(front_fighter_sprite);
-    }
-}
+#[derive(Component)]
+struct PokemonUI;
 
 fn spawn_pokemon_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     // Static Assets
     spawn_pokemon_sprite(&mut commands, &asset_server, &fighter);
     spawn_pokemon_name(&mut commands, &asset_server, &fighter);
@@ -193,7 +221,8 @@ fn spawn_pokemon_name(mut commands: &mut Commands, asset_server: &Res<AssetServe
                 },
             ),
             ..default()
-        });
+        })
+            .insert(PokemonUI);
     };
     match fighter.allegiance.as_ref().unwrap() {
         Allegiance::Enemy => {
@@ -229,7 +258,8 @@ fn spawn_pokemon_sprite(mut commands: &mut Commands, asset_server: &Res<AssetSer
             transform: transform.clone(),
             texture: asset_server.get_handle(id.as_str()).clone(),
             ..default()
-        });
+        })
+            .insert(PokemonUI);
     };
     match fighter.allegiance.as_ref().unwrap() {
         Allegiance::Ally => {
@@ -268,7 +298,8 @@ fn spawn_pokemon_level(mut commands: &mut Commands, asset_server: &Res<AssetServ
                 },
             ),
             ..default()
-        });
+        })
+            .insert(PokemonUI);
     };
     match fighter.allegiance.as_ref().unwrap() {
         Allegiance::Ally => {
@@ -310,7 +341,8 @@ fn spawn_health_bar(mut commands: &mut Commands, asset_server: &Res<AssetServer>
                 ..default()
             }
         )
-            .insert(HpBar);
+            .insert(HpBar)
+            .insert(PokemonUI);
     };
     match fighter.allegiance.as_ref().unwrap() {
         Allegiance::Ally => {
@@ -403,7 +435,8 @@ fn spawn_health_bar_number(mut commands: &mut Commands, asset_server: &Res<Asset
             ),
             ..default()
         })
-            .insert(HpNumber);
+            .insert(HpNumber)
+            .insert(PokemonUI);
     };
 
     match fighter.allegiance.as_ref().unwrap() {
@@ -417,6 +450,12 @@ fn spawn_health_bar_number(mut commands: &mut Commands, asset_server: &Res<Asset
         }
         // Don't spawn health info for enemy
         Allegiance::Enemy => {}
+    }
+}
+
+fn clear_ui(mut commands: Commands, query: Query<Entity, With<PokemonUI>>) {
+    for e in query.iter() {
+        commands.entity(e).despawn();
     }
 }
 // couldo : implement the non-pokemon specific ui

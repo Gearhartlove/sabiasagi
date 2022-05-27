@@ -27,10 +27,10 @@ Per,Nat,Pokemon,HP,Atk,Def,SpA,SpD,Spe,Total,Type I,Type II,Tier,Ability I,Abili
 27,26,Raichu,60,90,55,90,80,100,475,Electric,,NU,Static,,Lightningrod,30.0 kG,60,3 Spe,122,Yellow,,Neutral,Field,Fairy,75,1000000,Thunderstone,27,26,23,157,105,,Raichu
 28,27,Sandshrew,50,75,85,20,30,40,300,Ground,,NU,Sand Veil,,Sand Rush,12.0 kG,40,1 Def,93,Yellow,5120,Neutral,Field,,255,1000000,,28,27,48,112,,,Sandshrew
 29,28,Sandslash,75,100,110,45,55,65,450,Ground,,NU,Sand Veil,,Sand Rush,29.5 kG,60,2 Def,163,Yellow,,Neutral,Field,,90,1000000,Lv. 22,29,28,49,113,,,Sandslash
-30,29,Nidoran ♀,55,47,52,40,40,41,275,Poison,,NU,Poison Point,Rivalry,Hustle,7.0 kG,20,1 HP,59,Blue,5120,F (100%),Monster,Field,235,1059860,,30,29,95,,,,Nidoran ♀
+30,29,Nidoran_f,55,47,52,40,40,41,275,Poison,,NU,Poison Point,Rivalry,Hustle,7.0 kG,20,1 HP,59,Blue,5120,F (100%),Monster,Field,235,1059860,,30,29,95,,,,Nidoran ♀
 31,30,Nidorina,70,62,67,55,55,56,365,Poison,,NU,Poison Point,Rivalry,Hustle,20.0 kG,40,2 HP,117,Blue,,F (100%),-,,120,1059860,Lv. 16,31,30,96,,,,Nidorina
 32,31,Nidoqueen,90,82,87,75,85,76,495,Poison,Ground,UU,Poison Point,Rivalry,Sheer Force,60.0 kG,80,3 HP,194,Blue,,F (100%),-,,45,1059860,Moon Stone,32,31,97,,,,Nidoqueen
-33,32,Nidoran ♂,46,57,40,40,40,50,273,Poison,,NU,Poison Point,Rivalry,Hustle,9.0 kG,20,1 Atk,60,Purple,5120,M (100%),Monster,Field,235,1059860,,33,32,98,,,,Nidoran ♂
+33,32,Nidoran_m,46,57,40,40,40,50,273,Poison,,NU,Poison Point,Rivalry,Hustle,9.0 kG,20,1 Atk,60,Purple,5120,M (100%),Monster,Field,235,1059860,,33,32,98,,,,Nidoran ♂
 34,33,Nidorino,61,72,57,55,55,65,365,Poison,,NU,Poison Point,Rivalry,Hustle,19.5 kG,40,2 Atk,118,Purple,,M (100%),Monster,Field,120,1059860,Lv. 16,34,33,99,,,,Nidorino
 35,34,Nidoking,81,92,77,85,75,85,495,Poison,Ground,UU,Poison Point,Rivalry,Sheer Force,62.0 kG,80,3 Atk,195,Purple,,M (100%),Monster,Field,45,1059860,Moon Stone,35,34,100,,,,Nidoking
 37,35,Clefairy,70,45,48,60,65,35,323,Normal,,NU,Cute Charm,Magic Guard,Friend Guard,7.5 kG,20,2 HP,68,Pink,,F (75%),Fairy,,150,800000,Friendship,37,35,41,,100,,Clefairy
@@ -81,7 +81,7 @@ Per,Nat,Pokemon,HP,Atk,Def,SpA,SpD,Spe,Total,Type I,Type II,Tier,Ability I,Abili
 86,80,Slowbro,95,75,110,100,80,30,490,Water,Psychic,UU,Oblivious,Own Tempo,Regenerator,78.5 kG,80,2 Def,164,Pink,,Neutral,Monster,Water 1,75,1000000,Lv. 37,86,80,81,,,,Slowbro
 88,81,Magnemite,25,35,70,95,55,45,325,Electric,Steel,NU,Magnet Pull,Sturdy,Analytic,6.0 kG,20,1 SpA,89,Gray,5120,None,Mineral,,190,1000000,,88,81,118,82,178,,Magnemite
 89,82,Magneton,50,60,95,120,70,70,465,Electric,Steel,NU,Magnet Pull,Sturdy,Analytic,60.0 kG,80,2 SpA,161,Gray,,None,Mineral,,60,1000000,Lv. 30,89,82,119,83,179,,Magneton
-91,83,Farfetch'd,52,65,55,58,62,60,352,Normal,Flying,NU,Keen Eye,Inner Focus,Defiant,15.0 kG,40,1 Atk,94,Brown,5120,Neutral,Flying,Field,45,1000000,N,91,83,158,,,,Farfetch'd
+91,83,Farfetchd,52,65,55,58,62,60,352,Normal,Flying,NU,Keen Eye,Inner Focus,Defiant,15.0 kG,40,1 Atk,94,Brown,5120,Neutral,Flying,Field,45,1000000,N,91,83,158,,,,Farfetch'd
 92,84,Doduo,35,85,45,35,35,75,310,Normal,Flying,NU,Run Away,Early Bird,Tangled Feet,39.2 kG,60,1 Atk,96,Brown,5120,Neutral,Flying,,190,1000000,,92,84,199,92,,,Doduo
 93,85,Dodrio,60,110,70,60,60,100,460,Normal,Flying,NU,Run Away,Early Bird,Tangled Feet,85.2 kG,80,2 Atk,158,Brown,,Neutral,Flying,,45,1000000,Lv. 31,93,85,200,93,,,Dodrio
 94,86,Seel,65,45,55,45,70,45,325,Water,,NU,Thick Fat,Hydration,Ice Body,90.0 kG,80,1 SpD,100,White,5120,Neutral,Water 1,Field,190,1000000,,94,86,176,,,,Seel
