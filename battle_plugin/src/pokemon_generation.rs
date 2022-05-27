@@ -73,6 +73,9 @@ fn scrape_pokemon_web_images()
     // because I was having difficulties wit hthe reqewest api.
     // couldo: go back and get the html from the website instead of hcing them into the project
     // as an .html file
+
+    // NOTE: this will give you an error, you should not need to run this function, as I have
+    // already gotten the images for the pokemon for you.
     let back_file_path = "assets/pokemon_back_sprites.html";
     let front_file_path = "assets/pokemon_front_sprites.html";
     let html = fs::read_to_string(back_file_path)
