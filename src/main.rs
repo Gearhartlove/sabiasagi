@@ -26,8 +26,8 @@ fn main() {
         .insert_resource(battle_plugin::generate_fighters_map())
         .insert_resource(ClearColor(Color::rgb(1., 1., 1.)))
         // Only run the app when there is user input. This will significantly reduce CPU/GPU use.
-        .insert_resource(WinitSettings::desktop_app())
-        .insert_resource(RandomizeTimer(Timer::new(std::time::Duration::from_secs_f32(1.0), true)))
+        // .insert_resource(WinitSettings::desktop_app())
+        .insert_resource(RandomizeTimer(Timer::new(std::time::Duration::from_secs_f32(0.5), true)))
         .add_plugins(DefaultPlugins)
         .add_startup_system(cameras_setup)
         .add_startup_system(initialize_arena)
