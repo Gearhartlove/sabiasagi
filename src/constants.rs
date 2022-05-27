@@ -1,11 +1,14 @@
 use bevy::prelude::Transform;
 
+/// constants used throughout the project. Includes window and sprite + font size information
+
+// Window information
 pub const WINDOW_WIDTH: f32 = 512.;
 pub const WINDOW_HEIGHT: f32 = 384.;
-pub const SPRITE_SIZE: f32 = 32. * 5.;
 
 // UI Related
 pub const UI_LEVEL: f32 = 100.;
+pub const SPRITE_SIZE: f32 = 32. * 5.;
 pub const FONT_PATH: &str = "fonts/JetBrainsMono-SemiBold.ttf";
 pub const BOLD_FONT_PATH: &str = "fonts/JetBrainsMono-ExtraBold.ttf";
 pub const TEXT_OFFSET: f32 = 20.;

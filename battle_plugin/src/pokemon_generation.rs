@@ -1,38 +1,27 @@
-// spreadsheet: https://docs.google.com/spreadsheets/d/1DYnYR1bu1oRQ5ZMNwl5emfYzoYkr6P-JvULtYUTGtSg/edit#gid=0
-
-// Consider each pokemon in Generation 1.
-// Create a file in /battle_plugin/pokemon/pokemon_name
-// file structure:
-// /pokemon_name
-// ---- name_back_sprite.png
-// ---- name_front_sprite.png
-// ---- stats
-// ---- pokemon.rs // pub Fighter struct instantiation
-
-// Connect the file to file_structure
-
 use std::collections::HashMap;
-// go to website and consider each image.
 use std::env;
 use std::fs;
 use std::io::Read;
 use std::process::exit;
 use bevy::math::i32;
-use crate::{Fighter, Pokemon};
+use crate::{Fighter};
 use rand::Rng;
 use scraper::{Html, Selector};
 
+// generates the fighter_map as well as parses the pokedex
 pub fn generator_driver() -> HashMap<i32, Fighter> {
     let mut fighter_map: HashMap<i32, Fighter> = HashMap::default();
     parse_pokedex(&mut fighter_map);
     fighter_map
 }
 
+// Looks at assets/data/Pokedex.csv for the Pokemons name and starting hp and saves that information
+// to a fighter struct which is then added to a fighter_map.
+// couldo: grab other stats and save it to the fighter_map like attack, sp attack, defense, usw.
 fn parse_pokedex(mut fighter_map: &mut HashMap<i32, Fighter>) {
     let file_path = "assets/data/Pokedex.csv";
     let contents = fs::read_to_string(file_path)
         .expect(format!("The file {} does not exist", file_path).as_str());
-    // println!("With text: \n{}", contents);
 
     // handle the contents
     // info index
@@ -75,22 +64,30 @@ fn parse_pokedex(mut fighter_map: &mut HashMap<i32, Fighter>) {
     }
 }
 
-// Note: deciding not to get html using reqwest or other libraries because of async problems . . .
-// outside the scope of what I need to do
 const SPRITES_BASE_URL: &str = "https://www.pokencyclopedia.info";
+/// Looks at the html of the above link's front and back super game boy blue and red pokemon sprites.
+/// Saves all of the front and back sprites to the sprites /back_sprites and /front_sprites folders
 fn scrape_pokemon_web_images()
     -> Result<(), reqwest::Error>{
+    // Note Design Decision: Saved the html files here instead of looking them up on the web
+    // because I was having difficulties wit hthe reqewest api.
+    // couldo: go back and get the html from the website instead of hcing them into the project
+    // as an .html file
     let back_file_path = "assets/pokemon_back_sprites.html";
     let front_file_path = "assets/pokemon_front_sprites.html";
     let html = fs::read_to_string(back_file_path)
         .expect(format!("The file {} does not exist", back_file_path).as_str());
 
+    // make the entire html a fragment
     let fragment = Html::parse_fragment(html.as_str()) ;
+    // look specifically for every line with the .img tag
     let selector = Selector::parse("img").unwrap();
 
     for element in fragment.select(&selector) {
+        // get the information pertained to the 'src' tag
         let src = element.value().attr("src").unwrap();
         if src.contains("../sprites") {
+            // get the information pertained to the 'alt' tag
             let alt = element.value().attr("alt").unwrap();
             let number = &alt[..4];
             let name = &alt[5..];
@@ -107,6 +104,5 @@ fn scrape_pokemon_web_images()
             println!("saved: {} {}", number, name);
         }
     }
-
     Ok(())
 }

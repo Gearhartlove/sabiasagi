@@ -6,7 +6,6 @@ use constants::*;
 use bevy::prelude::*;
 use bevy::winit::WinitSettings;
 use battle_plugin::*;
-use battle_plugin::pokemon_roster::Pokemon;
 use crate::StartupStage::PreStartup;
 use bevy_inspector_egui::{InspectorPlugin, RegisterInspectable, WorldInspectorPlugin};
 use crate::AlignContent::Center;
@@ -14,9 +13,6 @@ use rand::Rng;
 use crate::CoreStage::First;
 
 // reference : https://www.youtube.com/watch?v=s_4zaj8EbFI&t=757s
-
-// IDEA: press a button to generate a different match up with
-// different levels and everything :)
 
 fn main() {
     let mut app = App::new();
@@ -33,23 +29,16 @@ fn main() {
         .insert_resource(WinitSettings::desktop_app())
         .insert_resource(RandomizeTimer(Timer::new(std::time::Duration::from_secs_f32(1.0), true)))
         .add_plugins(DefaultPlugins)
-        // .add_plugin(WorldInspectorPlugin::new())
-        // .add_startup_system_to_stage(PreStartup, setup_assets)
-        // .add_startup_system(randomize_arena)
-        .add_startup_system(camera_setup)
-        .add_startup_system(ui_camera_setup)
+        .add_startup_system(cameras_setup)
         .add_startup_system(initialize_arena)
         .add_system(randomize_arena)
-        // .add_system(setup_assets)
-        // .add_system(setup_arena)
-        // .add_startup_system(button_setup)
-        // .add_system(button_style_system)
         .run();
 }
 
 #[derive(Component)]
 struct CustomButton;
 
+// not using in app, saving in code for reference
 fn button_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn_bundle(ButtonBundle {
@@ -85,6 +74,7 @@ fn button_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
+// not using in app, saving in code for reference
 fn button_style_system(mut interaction_query: Query<(&Interaction, &mut UiColor, &Children),
     (Changed<Interaction>, With<CustomButton>)>, mut text_query: Query<&mut Text>) {
     for (interaction, mut color, children) in interaction_query.iter_mut() {
@@ -103,21 +93,12 @@ fn button_style_system(mut interaction_query: Query<(&Interaction, &mut UiColor,
     }
 }
 
-fn camera_setup(mut commands: Commands) {
+fn cameras_setup(mut commands: Commands) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-}
-
-fn ui_camera_setup(mut commands: Commands) {
     commands.spawn_bundle(UiCameraBundle::default());
 }
 
-fn debug_fighters(query: Query<&Fighter>) {
-    for fighter in query.iter() {
-        println!("{:?}", fighter);
-    }
-}
-
-
+/// Get random fighters from HashMap, index the number of the pokemon to get it's Fighter struct.
 fn spawn_random_new_fighters(fighter_map: Res<HashMap<i32, Fighter>>) -> (Fighter, Fighter) {
     let mut rng = rand::thread_rng();
     let ally_num = rng.gen_range(1..152);
@@ -128,6 +109,7 @@ fn spawn_random_new_fighters(fighter_map: Res<HashMap<i32, Fighter>>) -> (Fighte
     (ally_fighter, enemy_fighter)
 }
 
+/// Timer synced to the randomize_arena function, which spawns random pokemon in the every X seconds.
 struct RandomizeTimer(Timer);
 
 fn randomize_arena(mut timer: ResMut<RandomizeTimer>, query: Query<Entity, With<PokemonUI>>,
@@ -138,7 +120,6 @@ fn randomize_arena(mut timer: ResMut<RandomizeTimer>, query: Query<Entity, With<
 
     if timer.0.finished() {
         timer.0.reset();
-
         // clear ui
         for e in query.iter() {
             commands.entity(e).despawn();
@@ -147,8 +128,9 @@ fn randomize_arena(mut timer: ResMut<RandomizeTimer>, query: Query<Entity, With<
         // get random fighter
         let (ally_fighter, enemy_fighter) = spawn_random_new_fighters(fighter_map);
 
-        let back_id: String = format!("sprites/back_sprites/{}_back.png", enemy_fighter.name.clone());
-        let front_id: String = format!("sprites/front_sprites/{}_front.png", ally_fighter.name.clone());
+        // load assets into server
+        let back_id: String = format!("sprites/back_sprites/{}_back.png", ally_fighter.name.clone());
+        let front_id: String = format!("sprites/front_sprites/{}_front.png", enemy_fighter.name.clone());
         let back_fighter_sprite: Handle<Image> = asset_server.load(&back_id);
         let front_fighter_sprite: Handle<Image> = asset_server.load(&front_id);
 
@@ -158,32 +140,32 @@ fn randomize_arena(mut timer: ResMut<RandomizeTimer>, query: Query<Entity, With<
     }
 }
 
+// Setup the arena for desired pokemon to be present. Not practical to use at the moment, included
+// to show-off desired matchups.
 fn initialize_arena(mut commands: Commands, asset_server: Res<AssetServer>,
                     fighter_map: Res<HashMap<i32, Fighter>>) {
+    // get specific fighters
     let ally_fighter = fighter_map.get(&143).unwrap().clone().ally();
     let enemy_fighter = fighter_map.get(&1).unwrap().clone().enemy();
 
+    // load fighter's assets
     let back_id: String = format!("sprites/back_sprites/{}_back.png", ally_fighter.name.clone());
     let front_id: String = format!("sprites/front_sprites/{}_front.png", enemy_fighter.name.clone());
     let back_fighter_sprite: Handle<Image> = asset_server.load(&back_id);
     let front_fighter_sprite: Handle<Image> = asset_server.load(&front_id);
 
+    // spawn ui of fighters
     spawn_pokemon_ui(&mut commands, &asset_server, &ally_fighter);
     spawn_pokemon_ui(&mut commands, &asset_server, &enemy_fighter);
 }
 
-// fn setup_assets(mut commands: Commands, asset_server: Res<AssetServer>, fighter_map: Res<HashMap<i32, Fighter>>) {
-//     for fighter in fighter_map.values() {
-//         let back_id: String = format!("sprites/back_sprites/{}_back.png", fighter.name.clone());
-//         let front_id: String = format!("sprites/front_sprites/{}_front.png", fighter.name.clone());
-//         let back_fighter_sprite: Handle<Image> = asset_server.load(&back_id);
-//         let front_fighter_sprite: Handle<Image> = asset_server.load(&front_id);
-//     }
-// }
-
+/// Struct used as a component included as apart of Bevy Components which pertain to the fighter UI.
+/// The primary use case clears all of the assets off the screan in "randomize arena" by looking
+/// at every entity with the PokemonUI.
 #[derive(Component)]
 struct PokemonUI;
 
+/// Spawns the sprite, name, level, health bar, and health bar number of the fighter
 fn spawn_pokemon_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>, fighter: &Fighter) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     // Static Assets
@@ -191,7 +173,7 @@ fn spawn_pokemon_ui(mut commands: &mut Commands, asset_server: &Res<AssetServer>
     spawn_pokemon_name(&mut commands, &asset_server, &fighter);
     spawn_pokemon_level(&mut commands, &asset_server, &fighter);
     spawn_health_bar_text(&mut commands, &asset_server, &fighter);
-    // Dynamic Assets
+    // Dynamic Assets (would change in battle)
     spawn_health_bar(&mut commands, &asset_server, &fighter);
     spawn_health_bar_number(&mut commands, &asset_server, &fighter);
     // . . .
@@ -321,6 +303,7 @@ fn spawn_pokemon_level(mut commands: &mut Commands, asset_server: &Res<AssetServ
     }
 }
 
+/// Struct used for debugging
 #[derive(Component)]
 struct HpBar;
 
@@ -358,6 +341,7 @@ fn spawn_health_bar(mut commands: &mut Commands, asset_server: &Res<AssetServer>
     };
 }
 
+/// Struct used for debugging
 #[derive(Component)]
 struct HpText;
 
@@ -408,6 +392,7 @@ fn spawn_health_bar_text(mut commands: &mut Commands, asset_server: &Res<AssetSe
     }
 }
 
+/// Struct used for debugging
 #[derive(Component)]
 struct HpNumber;
 
@@ -452,13 +437,3 @@ fn spawn_health_bar_number(mut commands: &mut Commands, asset_server: &Res<Asset
         Allegiance::Enemy => {}
     }
 }
-
-fn clear_ui(mut commands: Commands, query: Query<Entity, With<PokemonUI>>) {
-    for e in query.iter() {
-        commands.entity(e).despawn();
-    }
-}
-// couldo : implement the non-pokemon specific ui
-// NON-POKEMON SPECIFIC UI
-// fn spawn_border_arrow(mut commands: &mut commands, asset_server: &res<AssetServer>, fighter: &fighter) {}
-// fn spawn_lower_menus(mut commands: &mut commands, asset_server: &res<AssetServer>, fighter: &fighter) {}
