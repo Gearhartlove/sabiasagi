@@ -2302,16 +2302,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "konkuRRenz"
-version = "0.1.0"
-dependencies = [
- "battle_plugin",
- "bevy",
- "bevy-inspector-egui",
- "rand 0.8.5",
-]
-
-[[package]]
 name = "kqueue"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3596,6 +3586,16 @@ name = "ryu"
 version = "1.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3f6f92acf49d1b98f7a81226834412ada05458b7364277387724a237f062695"
+
+[[package]]
+name = "sabiasagi"
+version = "0.1.0"
+dependencies = [
+ "battle_plugin",
+ "bevy",
+ "bevy-inspector-egui",
+ "rand 0.8.5",
+]
 
 [[package]]
 name = "same-file"

@@ -20,7 +20,7 @@ fn main() {
     let mut app = App::new();
     app
         .insert_resource(WindowDescriptor {
-            title: "konkuRRenz".to_string(),
+            title: "sabiasagi".to_string(),
             width: WINDOW_WIDTH,
             height: WINDOW_HEIGHT,
             ..default()
@@ -31,10 +31,18 @@ fn main() {
         // .insert_resource(WinitSettings::desktop_app())
         .insert_resource(RandomizeTimer(Timer::new(std::time::Duration::from_secs_f32(0.5), true)))
         .add_plugins(DefaultPlugins)
+        .add_plugin(WorldInspectorPlugin::new())
         .add_startup_system(cameras_setup)
+        .add_startup_system(setup_assets)
         .add_startup_system(initialize_arena)
-        .add_system(randomize_arena)
+        //.add_system(randomize_arena)
         .run();
+}
+
+fn setup_assets(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let left_arrow: Handle<Image> = asset_server.load("sprites/ui/left_facing_arrow.png");
+    let right_arrow: Handle<Image> = asset_server.load("sprites/ui/right_facing_arrow.png");
+    let dbg1: Handle<Image> = asset_server.load("sprites/ui/dbg1.png");
 }
 
 fn cameras_setup(mut commands: Commands) {

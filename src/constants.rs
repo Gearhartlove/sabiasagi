@@ -24,3 +24,11 @@ pub const RIGHT_FIGHTER_TRANSFORM: Transform =
     Transform::from_xyz((WINDOW_WIDTH/2. * -1. + SPRITE_SIZE/2. + ARBITRARY_X_VAL), (WINDOW_HEIGHT/2. * -1. + SPRITE_SIZE/2. + ARBITRARY_Y_VAL), 1.);
 pub const LEFT_FIGHTER_TRANSFORM: Transform =
     Transform::from_xyz((WINDOW_WIDTH/2. - SPRITE_SIZE/2. - ARBITRARY_X_VAL), (WINDOW_HEIGHT/2. - SPRITE_SIZE/2.), 1.);
+
+pub const BORDER_SCALE: f32 = 32. * 5.;
+pub const RIGHT_BORDER_ARROW_TRANSFORM: Transform =
+    Transform::from_xyz((WINDOW_WIDTH/2. * -1. + SPRITE_SIZE/2. + ARBITRARY_X_VAL), (WINDOW_HEIGHT/2. * -1. + SPRITE_SIZE/2. + ARBITRARY_Y_VAL), 2.);
+pub const LEFT_BORDER_ARROW_TRANSFORM: Transform =
+    Transform::from_xyz((WINDOW_WIDTH/2. - SPRITE_SIZE/2. - ARBITRARY_X_VAL), (WINDOW_HEIGHT/2. - SPRITE_SIZE/2.), 2.);
+
+// todo: understand UI scaling --> get each pixel to be the same size
