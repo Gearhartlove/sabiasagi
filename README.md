@@ -1,8 +1,8 @@
-# konkuRRenz
- ![Pokemon Battler Emulator](assets/references/Final_Pokemon_Battler_Demo.gif)
+# sabiasagi
+ ![Pokemon Blue Emulator (Rust x Bevy)](assets/references/Final_Pokemon_Battler_Demo.gif)
  
  # Genesis
- konkuRrenz is a Pokemon Battle Emulator which seeks to emulate the layout and generic sprite flexibility in 
+ sabiasagi is a Pokemon Battle Emulator which seeks to emulate the layout and generic sprite flexibility in 
  Pokemon. Specifically, the sprites, layout, and inspiration all come from Pokemon Blue.
 
  After experimenting with queries and generic bevy foundations in [rpong](https://github.com/Gearhartlove/rpong), I wanted to learn more about UI 
@@ -24,7 +24,7 @@
  
  I also node that: I payed more attention to code readability and consistency throughout this project, especially when compared to 
  the rushed rpong. The file structure is in the format of a plugin, which could be used in another bevy project. However, it is not correctly
- decoupled from main at the moment. I toyed around with making a user friendly api for konkeRRenz, however in the end I decided to focus on
+ decoupled from main at the moment. I toyed around with making a user friendly api for sabiasagi, however in the end I decided to focus on
  the features. Notably, the space below the screen is absent, as that is where the user actions go for in Pokemon Blue. I decided to not include them 
  in this project, as I have spent around 6 days on this project and recognise it's time to move onto the next! It is a feature you could implement if 
  you would like to :)
